@@ -1,7 +1,17 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "debian/jessie64"
-  config.vm.network "private_network", ip: "192.168.33.10"
-  config.vm.provider "virtualbox" do |vb|
-    vb.memory = "1024"
+
+  # master VM
+  config.vm.define "master" do |master|
+    master.vm.provider "virtualbox" do |vb|
+      vb.memory = "1024"
+      vb.name = "master"
+    end
+    master.vm.network "private_network", ip: "192.168.33.20"
+    master.vm.hostname = "master"
+    master.vm.provision "shell", inline: <<-SHELL
+      echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmnQQRJqLt9LnvfNl+Y7oFpGXwUNDNnOwWoWfYMC0zQ' >> /home/vagrant/.ssh/authorized_keys
+    SHELL
   end
+
 end
