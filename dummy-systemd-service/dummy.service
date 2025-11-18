@@ -1,0 +1,10 @@
+[Unit]
+Description=Dummy Logging Service
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bash /home/vagrant/dummy.sh
+
+[Install]
+WantedBy=multi-user.target
