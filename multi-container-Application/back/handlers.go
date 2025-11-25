@@ -12,12 +12,30 @@ func healthCheck(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, "OK")
 }
 
+func getTodoById(c *gin.Context) {
+	id := c.Param("id")
+
+	if _, err := uuid.Parse(id); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "ID invalide : format UUID requis"})
+		return
+	}
+
+	for _, todo := range todos {
+		if todo.ID == id {
+			c.IndentedJSON(http.StatusOK, todo)
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "todo not found"})
+}
+
 func getTodos(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, todos)
 }
 
 func createTodos(c *gin.Context) {
-	var body TodoDTO
+	var body CreateTodoDTO
 	if err := c.BindJSON(&body); err != nil {
 		return
 	}
