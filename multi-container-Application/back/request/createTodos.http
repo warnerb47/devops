@@ -1,0 +1,7 @@
+POST http://localhost:8080/todos HTTP/1.1
+content-type: application/json
+
+{
+ "label": "Make Todos API with Go",
+ "checked": false
+}
