@@ -2,8 +2,6 @@ package main
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type Todo struct {
@@ -19,7 +17,7 @@ type CreateTodoDTO struct {
 }
 
 var todos = []Todo{
-	{ID: uuid.New().String(), Label: "Blue Train", Checked: false, Date: time.Now().Format(time.RFC3339)},
-	{ID: uuid.New().String(), Label: "Jeru", Checked: false, Date: time.Now().Format(time.RFC3339)},
-	{ID: uuid.New().String(), Label: "Sarah Vaughan and Clifford Brown", Checked: false, Date: time.Now().Format(time.RFC3339)},
+	{ID: "571e5eb7-f253-4d50-b008-937ada01586e", Label: "Blue Train", Checked: false, Date: time.Now().Format(time.RFC3339)},
+	{ID: "7bbd5369-fd5a-4ccc-ae8a-a974e420a7a4", Label: "Jeru", Checked: false, Date: time.Now().Format(time.RFC3339)},
+	{ID: "3aff95e2-3dbe-4443-860b-40641b38557b", Label: "Sarah Vaughan and Clifford Brown", Checked: false, Date: time.Now().Format(time.RFC3339)},
 }

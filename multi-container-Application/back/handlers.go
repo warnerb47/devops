@@ -47,3 +47,44 @@ func createTodos(c *gin.Context) {
 	todos = append(todos, newTodo)
 	c.IndentedJSON(http.StatusCreated, newTodo)
 }
+
+func deleteTodo(c *gin.Context) {
+	id := c.Param("id")
+
+	if _, err := uuid.Parse(id); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "ID invalide : format UUID requis"})
+		return
+	}
+
+	for i, todo := range todos {
+		if todo.ID == id {
+			todos = append(todos[:i], todos[i+1:]...)
+			c.JSON(http.StatusOK, gin.H{"message": "Todo deleted"})
+			return
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
+}
+
+func updateTodo(c *gin.Context) {
+	id := c.Param("id")
+
+	if _, err := uuid.Parse(id); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "ID invalide : format UUID requis"})
+		return
+	}
+
+	for i, todo := range todos {
+		if todo.ID == id {
+			if err := c.BindJSON(&todos[i]); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, todos[i])
+			return
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
+}
