@@ -1,10 +1,5 @@
 import './style.css';
-
-type Todo = {
-  id: number;
-  text: string;
-  completed: boolean;
-};
+import { todoApi, type Todo } from './api';
 
 class TodoApp {
   private todos: Todo[] = [];
@@ -13,12 +8,12 @@ class TodoApp {
   private todoCount: HTMLElement;
   private filterButtons: NodeListOf<HTMLButtonElement>;
   private currentFilter: 'all' | 'active' | 'completed' = 'all';
+  private isLoading: boolean = false;
 
   constructor() {
-    this.todos = this.loadTodos();
     this.initElements();
     this.setupEventListeners();
-    this.render();
+    this.loadTodos();
   }
 
   private initElements(): void {
@@ -70,40 +65,84 @@ class TodoApp {
     document.getElementById('clear-completed')?.addEventListener('click', () => this.clearCompleted());
   }
 
-  private addTodo(): void {
-    const text = this.todoInput.value.trim();
-    if (text) {
-      const newTodo: Todo = {
-        id: Date.now(),
-        text,
-        completed: false
-      };
-      this.todos.push(newTodo);
-      this.saveTodos();
-      this.todoInput.value = '';
-      this.render();
+  private async addTodo(): Promise<void> {
+    const label = this.todoInput.value.trim();
+    if (label) {
+      try {
+        this.isLoading = true;
+        const newTodo = await todoApi.create({
+          label,
+          checked: false
+        });
+        this.todos.push(newTodo);
+        this.todoInput.value = '';
+        this.isLoading = false;
+        this.render();
+      } catch (error) {
+        console.error('Failed to add todo:', error);
+        alert('Failed to add todo. Please try again.');
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 
-  private toggleTodo(id: number): void {
+  private async toggleTodo(id: string): Promise<void> {
     const todo = this.todos.find(t => t.id === id);
     if (todo) {
-      todo.completed = !todo.completed;
-      this.saveTodos();
-      this.render();
+      try {
+        this.isLoading = true;
+        const updatedTodo = await todoApi.update(id, {
+          checked: !todo.checked
+        });
+        // Update the local todo with the server response
+        Object.assign(todo, updatedTodo);
+        this.isLoading = false;
+        this.render();
+      } catch (error) {
+        console.error('Failed to update todo:', error);
+        alert('Failed to update todo. Please try again.');
+      } finally {
+        this.isLoading = false;
+      }
     }
   }
 
-  private deleteTodo(id: number): void {
-    this.todos = this.todos.filter(todo => todo.id !== id);
-    this.saveTodos();
-    this.render();
+  private async deleteTodo(id: string): Promise<void> {
+    try {
+      this.isLoading = true;
+      await todoApi.delete(id);
+      this.todos = this.todos.filter(todo => todo.id !== id);
+      this.isLoading = false;
+      this.render();
+    } catch (error) {
+      console.error('Failed to delete todo:', error);
+      alert('Failed to delete todo. Please try again.');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  private clearCompleted(): void {
-    this.todos = this.todos.filter(todo => !todo.completed);
-    this.saveTodos();
-    this.render();
+  private async clearCompleted(): Promise<void> {
+    try {
+      this.isLoading = true;
+      // Delete all completed todos
+      const deletePromises = this.todos
+        .filter(todo => todo.checked)
+        .map(todo => todoApi.delete(todo.id));
+      
+      await Promise.all(deletePromises);
+      
+      // Update local state
+      this.todos = this.todos.filter(todo => !todo.checked);
+      this.isLoading = false;
+      this.render();
+    } catch (error) {
+      console.error('Failed to clear completed todos:', error);
+      alert('Failed to clear completed todos. Please try again.');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   private setFilter(filter: 'all' | 'active' | 'completed'): void {
@@ -121,9 +160,9 @@ class TodoApp {
   private getFilteredTodos(): Todo[] {
     switch (this.currentFilter) {
       case 'active':
-        return this.todos.filter(todo => !todo.completed);
+        return this.todos.filter(todo => !todo.checked);
       case 'completed':
-        return this.todos.filter(todo => todo.completed);
+        return this.todos.filter(todo => todo.checked);
       default:
         return [...this.todos];
     }
@@ -133,33 +172,44 @@ class TodoApp {
     localStorage.setItem('todos', JSON.stringify(this.todos));
   }
 
-  private loadTodos(): Todo[] {
-    const saved = localStorage.getItem('todos');
-    return saved ? JSON.parse(saved) : [];
+  private async loadTodos(): Promise<void> {
+    try {
+      this.isLoading = true;
+      this.todos = await todoApi.getAll();
+      this.isLoading = false;
+      this.render();
+    } catch (error) {
+      console.error('Failed to load todos:', error);
+      alert('Failed to load todos. Please try again later.');
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   private render(): void {
     const filteredTodos = this.getFilteredTodos();
     
-    this.todoList.innerHTML = filteredTodos.map(todo => `
-      <li class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
-        <input 
-          type="checkbox" 
-          ${todo.completed ? 'checked' : ''} 
-          class="todo-checkbox"
-        />
-        <span class="todo-text">${todo.text}</span>
-        <button class="delete-btn">×</button>
-      </li>
-    `).join('');
+    this.todoList.innerHTML = this.isLoading 
+      ? '<div class="loading">Loading...</div>'
+      : filteredTodos.map(todo => `
+        <li class="todo-item ${todo.checked ? 'completed' : ''}" data-id="${todo.id}">
+          <input 
+            type="checkbox" 
+            ${todo.checked ? 'checked' : ''} 
+            class="todo-checkbox"
+          />
+          <span class="todo-text">${todo.label}</span>
+          <button class="delete-btn">×</button>
+        </li>
+      `).join('');
 
     // Update todo count
-    const activeCount = this.todos.filter(todo => !todo.completed).length;
+    const activeCount = this.todos.filter(todo => !todo.checked).length;
     this.todoCount.textContent = `${activeCount} ${activeCount === 1 ? 'item' : 'items'} left`;
 
     // Add event listeners to todo items
     document.querySelectorAll('.todo-item').forEach(item => {
-      const id = parseInt(item.getAttribute('data-id') || '0');
+      const id = item.getAttribute('data-id') || '';
       const checkbox = item.querySelector('.todo-checkbox') as HTMLInputElement;
       const deleteBtn = item.querySelector('.delete-btn') as HTMLButtonElement;
       

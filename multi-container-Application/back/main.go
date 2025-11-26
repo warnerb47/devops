@@ -1,10 +1,13 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
+)
 
 func main() {
 	router := gin.Default()
-
+	router.Use(cors.Default())
 	router.GET("/", healthCheck)
 	router.GET("/todos", getTodos)
 	router.GET("/todos/:id", getTodoById)
