@@ -3,10 +3,10 @@ import { todoApi, type Todo } from './api';
 
 class TodoApp {
   private todos: Todo[] = [];
-  private todoInput: HTMLInputElement;
-  private todoList: HTMLUListElement;
-  private todoCount: HTMLElement;
-  private filterButtons: NodeListOf<HTMLButtonElement>;
+  private todoInput!: HTMLInputElement;
+  private todoList!: HTMLUListElement;
+  private todoCount!: HTMLElement;
+  private filterButtons!: NodeListOf<HTMLButtonElement>;
   private currentFilter: 'all' | 'active' | 'completed' = 'all';
   private isLoading: boolean = false;
 
