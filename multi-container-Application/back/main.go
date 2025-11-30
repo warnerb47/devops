@@ -1,19 +1,62 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"warnerb47/todo/controllers"
+	"warnerb47/todo/services"
+
 	"github.com/gin-gonic/gin"
-	"github.com/gin-contrib/cors"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
-func main() {
-	router := gin.Default()
-	router.Use(cors.Default())
-	router.GET("/", healthCheck)
-	router.GET("/todos", getTodos)
-	router.GET("/todos/:id", getTodoById)
-	router.DELETE("/todos/:id", deleteTodo)
-	router.POST("/todos", createTodos)
-	router.PUT("/todos/:id", updateTodo)
+var (
+	server         *gin.Engine
+	todoService    services.TodoService
+	todoController *controllers.TodoController
+	ctx            context.Context
+	todoCollection *mongo.Collection
+	mongoClient    *mongo.Client
+	err            error
+)
 
-	router.Run("localhost:8080")
+func init() {
+	ctx = context.TODO()
+	API_URI := "mongodb://root:root@localhost:27017"
+	mongoConnection := options.Client().ApplyURI(API_URI)
+	mongoClient, err = mongo.Connect(mongoConnection)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err := mongoClient.Ping(ctx, readpref.Primary())
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Connected to MongoDB!")
+	todoCollection = mongoClient.Database("todoDB").Collection("todos")
+	todoService = services.New(todoCollection, ctx)
+	todoController = controllers.New(todoService)
+	server = gin.Default()
+}
+
+func main() {
+	defer mongoClient.Disconnect(ctx)
+	basePath := server.Group("/v1")
+	todoController.RegisterTodoRoutes(basePath)
+	log.Fatal(server.Run(":8080"))
+
+	// router := gin.Default()
+	// router.Use(cors.Default())
+
+	// router.GET("/", healthCheck)
+	// router.GET("/todos", getTodos)
+	// router.GET("/todos/:id", getTodoById)
+	// router.DELETE("/todos/:id", deleteTodo)
+	// router.POST("/todos", createTodos)
+	// router.PUT("/todos/:id", updateTodo)
+
+	// router.Run("localhost:8080")
 }

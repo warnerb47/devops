@@ -1,8 +1,7 @@
-PUT http://localhost:8080/todos/7bbd5369-fd5a-4ccc-ae8a-a974e420a7a4 HTTP/1.1
+PUT http://localhost:8080/v1/todos/692c42984f9f08518b6e7d13 HTTP/1.1
 content-type: application/json
 
  {
-    "id": "7bbd5369-fd5a-4ccc-ae8a-a974e420a7a4",
     "label": "Jeru update",
     "checked": true,
     "date": "2025-11-25T21:06:39Z"
