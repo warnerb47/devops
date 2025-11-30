@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/todos';
+const API_BASE_URL = 'http://localhost:8080/v1/todos';
 
 export interface Todo {
   id: string;
