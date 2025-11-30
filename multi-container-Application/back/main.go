@@ -7,6 +7,7 @@ import (
 	"warnerb47/todo/controllers"
 	"warnerb47/todo/services"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -40,6 +41,9 @@ func init() {
 	todoService = services.New(todoCollection, ctx)
 	todoController = controllers.New(todoService)
 	server = gin.Default()
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:5173"}
+	server.Use(cors.New(config))
 }
 
 func main() {
@@ -47,16 +51,4 @@ func main() {
 	basePath := server.Group("/v1")
 	todoController.RegisterTodoRoutes(basePath)
 	log.Fatal(server.Run(":8080"))
-
-	// router := gin.Default()
-	// router.Use(cors.Default())
-
-	// router.GET("/", healthCheck)
-	// router.GET("/todos", getTodos)
-	// router.GET("/todos/:id", getTodoById)
-	// router.DELETE("/todos/:id", deleteTodo)
-	// router.POST("/todos", createTodos)
-	// router.PUT("/todos/:id", updateTodo)
-
-	// router.Run("localhost:8080")
 }
