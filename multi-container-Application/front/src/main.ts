@@ -168,10 +168,6 @@ class TodoApp {
     }
   }
 
-  private saveTodos(): void {
-    localStorage.setItem('todos', JSON.stringify(this.todos));
-  }
-
   private async loadTodos(): Promise<void> {
     try {
       this.isLoading = true;
