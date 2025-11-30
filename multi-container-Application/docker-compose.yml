@@ -7,14 +7,22 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: root
+    networks:
+      - app-network
 
-  # mongo-express:
-  #   image: mongo-express
-  #   restart: always
-  #   ports:
-  #     - 8081:8081
-  #   environment:
-  #     ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
-  #     ME_CONFIG_BASICAUTH_ENABLED: true
-  #     ME_CONFIG_BASICAUTH_USERNAME: mongoexpressuser
-  #     ME_CONFIG_BASICAUTH_PASSWORD: mongoexpresspass
+  todo-back:
+    build:
+      context: ./back
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - MONGO_URI=mongodb://root:root@mongo:27017
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
