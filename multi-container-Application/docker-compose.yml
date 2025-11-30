@@ -15,7 +15,7 @@ services:
       context: ./back
     restart: always
     ports:
-      - 8080:8080
+      - 3000:3000
     environment:
       - MONGO_URI=mongodb://root:root@mongo:27017
     depends_on:

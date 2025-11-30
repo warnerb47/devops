@@ -47,7 +47,8 @@ func init() {
 	todoController = controllers.New(todoService)
 	server = gin.Default()
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:5173"}
+	// config.AllowOrigins = []string{"http://localhost:5173"}
+	config.AllowAllOrigins = true
 	server.Use(cors.New(config))
 }
 
@@ -55,5 +56,5 @@ func main() {
 	defer mongoClient.Disconnect(ctx)
 	basePath := server.Group("/v1")
 	todoController.RegisterTodoRoutes(basePath)
-	log.Fatal(server.Run(":8080"))
+	log.Fatal(server.Run(":3000"))
 }
