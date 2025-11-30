@@ -7,7 +7,17 @@ export interface Todo {
 }
 
 export const todoApi = {
-  apiBaseUrl: "http://localhost:8080/v1/todos",
+  apiBaseUrl: "",
+
+  async loadEnvConfig() {
+    const response = await fetch('/env.json');
+    if (!response.ok) {
+      throw new Error('Failed to fetch env');
+    }
+    const env = await response.json();
+    this.apiBaseUrl = env.API_BASE_URL;
+  },
+
   // Get all todos
   async getAll(): Promise<Todo[]> {
     const response = await fetch(this.apiBaseUrl);
