@@ -1,4 +1,3 @@
-const API_BASE_URL = 'http://localhost:8080/v1/todos';
 
 export interface Todo {
   id: string;
@@ -8,9 +7,10 @@ export interface Todo {
 }
 
 export const todoApi = {
+  apiBaseUrl: "http://localhost:8080/v1/todos",
   // Get all todos
   async getAll(): Promise<Todo[]> {
-    const response = await fetch(API_BASE_URL);
+    const response = await fetch(this.apiBaseUrl);
     if (!response.ok) {
       throw new Error('Failed to fetch todos');
     }
@@ -19,7 +19,7 @@ export const todoApi = {
 
   // Get a single todo by ID
   async getById(id: string): Promise<Todo> {
-    const response = await fetch(`${API_BASE_URL}/${id}`);
+    const response = await fetch(`${this.apiBaseUrl}/${id}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch todo with id ${id}`);
     }
@@ -28,7 +28,7 @@ export const todoApi = {
 
   // Create a new todo
   async create(todo: Omit<Todo, 'id' | 'date'>): Promise<Todo> {
-    const response = await fetch(API_BASE_URL, {
+    const response = await fetch(this.apiBaseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export const todoApi = {
 
   // Update an existing todo
   async update(id: string, todo: Partial<Todo>): Promise<Todo> {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${this.apiBaseUrl}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export const todoApi = {
 
   // Delete a todo
   async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/${id}`, {
+    const response = await fetch(`${this.apiBaseUrl}/${id}`, {
       method: 'DELETE',
     });
     if (!response.ok) {

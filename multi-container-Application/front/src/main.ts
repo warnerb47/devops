@@ -13,7 +13,19 @@ class TodoApp {
   constructor() {
     this.initElements();
     this.setupEventListeners();
-    this.loadTodos();
+    this.loadEnvConfig().then(
+      () => this.loadTodos()
+    );
+  }
+
+  private async loadEnvConfig() {
+    const response = await fetch('/env.json');
+    if (!response.ok) {
+      throw new Error('Failed to fetch env');
+    }
+    const env = await response.json();
+    console.log({env});
+    todoApi.apiBaseUrl = env.API_BASE_URL;
   }
 
   private initElements(): void {
