@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"warnerb47/todo/controllers"
 	"warnerb47/todo/services"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -26,8 +28,11 @@ var (
 
 func init() {
 	ctx = context.TODO()
-	API_URI := "mongodb://root:root@localhost:27017"
-	mongoConnection := options.Client().ApplyURI(API_URI)
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file")
+	}
+	MONGO_URI := os.Getenv("MONGO_URI")
+	mongoConnection := options.Client().ApplyURI(MONGO_URI)
 	mongoClient, err = mongo.Connect(mongoConnection)
 	if err != nil {
 		log.Fatal(err)
