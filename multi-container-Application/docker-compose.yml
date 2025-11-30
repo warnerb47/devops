@@ -23,6 +23,17 @@ services:
     networks:
       - app-network
 
+  todo-front:
+    build:
+      context: ./front
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - todo-back
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
